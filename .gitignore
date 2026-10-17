@@ -1,0 +1,22 @@
+# Node
+node_modules/
+npm-debug.log
+
+# Environment variables
+.env
+backend/.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+ai-service/venv/
+
+# Vite build
+frontend/dist/
+
+# OS files
+.DS_Store
+Thumbs.db
