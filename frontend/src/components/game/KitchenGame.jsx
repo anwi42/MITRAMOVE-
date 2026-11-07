@@ -43,8 +43,6 @@ export default function KitchenGame({ child: childProp } = {}) {
   const [child_, setChild] = useState(child || null);
   const [calibrationSkipped, setCalibrationSkipped] = useState(false);
   const [phase, setPhase] = useState('ready');
-  const [difficultyLevel, setDifficultyLevel] = useState(1);
-  const [showSettings, setShowSettings] = useState(false);
   const [score, setScore] = useState(0);
   const [saving, setSaving] = useState(false);
   const [cameraError, setCameraError] = useState(null);
@@ -67,7 +65,6 @@ export default function KitchenGame({ child: childProp } = {}) {
     sessionStartRef.current = Date.now();
 
     const config = {
-      difficultyLevel,
       onScoreUpdate: ({ score: newScore }) => setScore(newScore),
       onFatigueDetected: (event) => setFatigueAlert(event),
       onSessionUpdate: (sessionData) => {
@@ -240,7 +237,7 @@ export default function KitchenGame({ child: childProp } = {}) {
       persistenceRate: successRate,
       generalizationScore: 0.7,
       communicationFreq: 0,
-      adaptationVelocity: difficultyLevel / 5,
+      adaptationVelocity: 0.7,
     };
     const total =
       Object.values(participationValues).reduce((a, b) => a + b, 0) /
@@ -272,12 +269,10 @@ export default function KitchenGame({ child: childProp } = {}) {
     navigate('/dashboard');
   }
 
-  function startLevel(level) {
-    setDifficultyLevel(level);
+  function handleStart() {
     setScore(0);
     setFatigueAlert(null);
     finalSessionRef.current = null;
-    setShowSettings(false);
     setPhase('playing');
   }
 
@@ -303,21 +298,13 @@ export default function KitchenGame({ child: childProp } = {}) {
         <div className="card w-full max-w-lg text-center space-y-4">
           <h1 className="text-2xl font-bold text-gray-800">🍵 Kitchen Helper</h1>
           <p className="text-gray-500">
-            Choose a difficulty for {child_.animalEmoji ? `${child_.animalEmoji} ` : ''}
-            {child_.name}
+            Ready to help, {child_.animalEmoji ? `${child_.animalEmoji} ` : ''}
+            {child_.name}?
           </p>
 
-          <div className="grid grid-cols-5 gap-2">
-            {[1, 2, 3, 4, 5].map((level) => (
-              <button
-                key={level}
-                className="btn-secondary py-3 font-bold"
-                onClick={() => startLevel(level)}
-              >
-                {level}
-              </button>
-            ))}
-          </div>
+          <button className="btn-secondary py-3 px-8 font-bold" onClick={handleStart}>
+            Start
+          </button>
 
           <Link to="/dashboard" className="text-sm text-gray-500 underline block">
             Back to Dashboard
@@ -354,42 +341,6 @@ export default function KitchenGame({ child: childProp } = {}) {
           Gesture: {gesture || 'none'}
         </span>
       </div>
-
-      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-        <span className="bg-white/90 rounded-full px-4 py-2 shadow font-semibold text-gray-700">
-          Level {difficultyLevel}
-        </span>
-        <button
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-white/90 shadow text-lg"
-          onClick={() => setShowSettings((prev) => !prev)}
-        >
-          ⚙️
-        </button>
-      </div>
-
-      {showSettings && (
-        <div className="absolute top-20 right-4 z-20 bg-white rounded-xl shadow-lg p-4 w-56 space-y-3">
-          <p className="text-sm font-semibold text-gray-700">Difficulty Level</p>
-          <div className="grid grid-cols-5 gap-1">
-            {[1, 2, 3, 4, 5].map((level) => (
-              <button
-                key={level}
-                className={`py-1.5 rounded-lg text-sm font-bold ${
-                  difficultyLevel === level
-                    ? 'bg-amber-500 text-white'
-                    : 'bg-gray-100 text-gray-600'
-                }`}
-                onClick={() => setDifficultyLevel(level)}
-              >
-                {level}
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-gray-400">
-            Changes apply to the next session.
-          </p>
-        </div>
-      )}
 
       {fatigueAlert && (
         <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 bg-orange-100 border border-orange-300 text-orange-700 rounded-xl px-5 py-2.5 shadow flex items-center gap-3">

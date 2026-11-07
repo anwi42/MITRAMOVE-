@@ -9,17 +9,16 @@ const WINDOW_COLOR = 0xbae6fd;
 const ITEM_TYPES = ['cup', 'bowl', 'bottle'];
 const ITEM_COLORS = { cup: 0xf87171, bowl: 0x60a5fa, bottle: 0x34d399 };
 
-const DIFFICULTY_SETTINGS = {
-  1: { reachTimeoutMs: 8000, holdDurationMs: 1000, graspTimeoutMs: 7000, carryTimeoutMs: 6000 },
-  2: { reachTimeoutMs: 6800, holdDurationMs: 900, graspTimeoutMs: 6200, carryTimeoutMs: 5200 },
-  3: { reachTimeoutMs: 5600, holdDurationMs: 800, graspTimeoutMs: 5400, carryTimeoutMs: 4400 },
-  4: { reachTimeoutMs: 4400, holdDurationMs: 700, graspTimeoutMs: 4600, carryTimeoutMs: 3600 },
-  5: { reachTimeoutMs: 3500, holdDurationMs: 600, graspTimeoutMs: 3800, carryTimeoutMs: 3000 },
-};
+const REACH_TIMEOUT_MS = 5600;
+const REACH_HOLD_MS = 400;
+const HOLD_DURATION_MS = 800;
+const GRASP_TIMEOUT_MS = 5400;
+const CARRY_TIMEOUT_MS = 4400;
 
 const REACH_SPAWN_MARGIN = 100;
+const REACH_MOVE_DURATION_MS = 1200;
 const CARRY_DISTANCE = 180;
-const CARRY_MOVE_DURATION_MS = 350;
+const CARRY_MOVE_DURATION_MS = 1500;
 const ROUND_SCORE = 10;
 const NEXT_ROUND_DELAY_MS = 900;
 const PHASE_RESET_DELAY_MS = 700;
@@ -53,7 +52,6 @@ export default class KitchenScene extends Phaser.Scene {
 
     this.cameras.main.setBackgroundColor(WALL_COLOR);
 
-    this.difficultyLevel = this.gameConfig.difficultyLevel || 1;
     this.gameOver = false;
     this.score = 0;
 
@@ -87,6 +85,14 @@ export default class KitchenScene extends Phaser.Scene {
     });
     this.phaseText.setOrigin(0.5, 0.5);
 
+    this.feedbackText = this.add.text(width / 2, height - 60, '', {
+      fontSize: '16px',
+      fontFamily: 'sans-serif',
+      color: '#dc2626',
+      fontStyle: 'bold',
+    });
+    this.feedbackText.setOrigin(0.5, 0.5);
+
     this.startRound();
   }
 
@@ -107,7 +113,7 @@ export default class KitchenScene extends Phaser.Scene {
     } else if (this.phase === 'CARRY') {
       this.updateCarryPhase();
     } else if (this.phase === 'REACH') {
-      this.updateReachPhase();
+      this.updateReachPhase(delta);
     }
   }
 
@@ -125,10 +131,6 @@ export default class KitchenScene extends Phaser.Scene {
   }
 
   // ---- Round / item setup ----
-
-  getDifficultySettings() {
-    return DIFFICULTY_SETTINGS[this.difficultyLevel] || DIFFICULTY_SETTINGS[1];
-  }
 
   startRound() {
     if (this.gameOver) return;
@@ -179,6 +181,7 @@ export default class KitchenScene extends Phaser.Scene {
     this.phase = 'REACH';
     this.phaseStats.reach.attempts += 1;
     this.currentGesture = null;
+    this.feedbackText.setText('');
     this.updatePhaseLabel();
 
     let x;
@@ -199,25 +202,37 @@ export default class KitchenScene extends Phaser.Scene {
 
     this.item = this.buildItem(x, y, this.itemType);
     this.itemHomeX = width / 2;
+    this.reachHoldElapsedMs = 0;
 
-    this.schedulePhaseTimeout(this.getDifficultySettings().reachTimeoutMs, () => this.handlePhaseTimeout());
+    this.schedulePhaseTimeout(REACH_TIMEOUT_MS, () => this.handlePhaseTimeout());
   }
 
-  updateReachPhase() {
-    if (this.currentGesture && this.currentGesture === this.reachDirection) {
-      this.completeReachPhase();
+  updateReachPhase(delta) {
+    if (!this.currentGesture) {
+      this.reachHoldElapsedMs = 0;
+      return;
+    }
+
+    if (this.currentGesture === this.reachDirection) {
+      this.reachHoldElapsedMs += delta;
+      if (this.reachHoldElapsedMs >= REACH_HOLD_MS) {
+        this.completeReachPhase();
+      }
+    } else {
+      this.reachHoldElapsedMs = 0;
     }
   }
 
   completeReachPhase() {
     this.clearPhaseTimeout();
+    this.feedbackText.setText('');
     this.phaseStats.reach.successes += 1;
 
     this.tweens.add({
       targets: this.item,
       x: this.itemHomeX,
       y: this.counterY,
-      duration: 350,
+      duration: REACH_MOVE_DURATION_MS,
       ease: 'Sine.easeOut',
       onComplete: () => this.enterGraspPhase(),
     });
@@ -229,6 +244,7 @@ export default class KitchenScene extends Phaser.Scene {
     this.phase = 'GRASP';
     this.phaseStats.grasp.attempts += 1;
     this.currentGesture = null;
+    this.feedbackText.setText('');
     this.updatePhaseLabel();
 
     this.holdElapsedMs = 0;
@@ -239,11 +255,11 @@ export default class KitchenScene extends Phaser.Scene {
     this.progressBarFill.setVisible(true);
     this.progressBarFill.width = 0;
 
-    this.schedulePhaseTimeout(this.getDifficultySettings().graspTimeoutMs, () => this.handlePhaseTimeout());
+    this.schedulePhaseTimeout(GRASP_TIMEOUT_MS, () => this.handlePhaseTimeout());
   }
 
   updateGraspPhase(delta) {
-    const { holdDurationMs } = this.getDifficultySettings();
+    const holdDurationMs = HOLD_DURATION_MS;
 
     if (this.currentGesture === 'HOLD') {
       this.holdElapsedMs += delta;
@@ -284,26 +300,30 @@ export default class KitchenScene extends Phaser.Scene {
     this.phase = 'CARRY';
     this.phaseStats.carry.attempts += 1;
     this.currentGesture = null;
+    this.feedbackText.setText('');
     this.updatePhaseLabel();
     this.carryMoving = false;
 
     this.carryTargetX =
       this.carryDirection === 'LEFT'
-        ? width / 2 + CARRY_DISTANCE
-        : width / 2 - CARRY_DISTANCE;
+        ? width / 2 - CARRY_DISTANCE
+        : width / 2 + CARRY_DISTANCE;
 
-    this.schedulePhaseTimeout(this.getDifficultySettings().carryTimeoutMs, () => this.handlePhaseTimeout());
+    this.schedulePhaseTimeout(CARRY_TIMEOUT_MS, () => this.handlePhaseTimeout());
   }
 
   updateCarryPhase() {
     if (this.carryMoving) return;
-    if (this.currentGesture && this.currentGesture === this.carryDirection) {
+    if (!this.currentGesture) return;
+
+    if (this.currentGesture === this.carryDirection) {
       this.completeCarryPhase();
     }
   }
 
   completeCarryPhase() {
     this.clearPhaseTimeout();
+    this.feedbackText.setText('');
     this.carryMoving = true;
 
     this.tweens.add({
@@ -357,6 +377,7 @@ export default class KitchenScene extends Phaser.Scene {
 
     this.progressBarBg.setVisible(false);
     this.progressBarFill.setVisible(false);
+    this.feedbackText.setText('');
 
     const item = this.item;
     this.item = null;
@@ -459,7 +480,6 @@ export default class KitchenScene extends Phaser.Scene {
         attempts: roundsAttempted,
         hits: roundsCompleted,
         misses: roundsAttempted - roundsCompleted,
-        difficultyReached: this.difficultyLevel,
       },
       phaseStats: this.phaseStats,
       movementQuality: {
