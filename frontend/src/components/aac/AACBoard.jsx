@@ -140,7 +140,10 @@ export default function AACBoard({ child }) {
     <div className="min-h-screen bg-primary-50">
       <nav className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
         <div className="text-xl font-bold text-primary-600">MitraMove</div>
-        <div className="text-gray-700 font-semibold">Hi, {child.name}! 👋</div>
+        <div className="text-gray-700 font-semibold">
+          Hi, {child.animalEmoji ? `${child.animalEmoji} ` : ''}
+          {child.name}! 👋
+        </div>
       </nav>
 
       <div className="max-w-5xl mx-auto px-6 py-6">

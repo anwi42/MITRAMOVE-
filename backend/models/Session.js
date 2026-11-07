@@ -43,6 +43,34 @@ const ParticipationScoreSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const MovementQualitySchema = new mongoose.Schema(
+  {
+    avgPathStraightness: { type: Number, default: 0 },
+    avgSmoothness: { type: Number, default: 0 },
+    avgHoldStability: { type: Number, default: 0 },
+    overshootCount: { type: Number, default: 0 },
+  },
+  { _id: false }
+);
+
+const PhaseStatSchema = new mongoose.Schema(
+  {
+    attempts: { type: Number, default: 0 },
+    successes: { type: Number, default: 0 },
+  },
+  { _id: false }
+);
+
+const PhaseStatsSchema = new mongoose.Schema(
+  {
+    reach: { type: PhaseStatSchema, default: () => ({}) },
+    grasp: { type: PhaseStatSchema, default: () => ({}) },
+    carry: { type: PhaseStatSchema, default: () => ({}) },
+    release: { type: PhaseStatSchema, default: () => ({}) },
+  },
+  { _id: false }
+);
+
 const SessionSchema = new mongoose.Schema(
   {
     childId: {
@@ -52,7 +80,7 @@ const SessionSchema = new mongoose.Schema(
     },
     module: {
       type: String,
-      enum: ['flower', 'aac', 'fish'],
+      enum: ['flower', 'aac', 'fish', 'balloon', 'kitchen'],
       required: true,
     },
     duration: {
@@ -81,6 +109,14 @@ const SessionSchema = new mongoose.Schema(
     },
     directionStats: {
       type: DirectionStatsSchema,
+      default: () => ({}),
+    },
+    movementQuality: {
+      type: MovementQualitySchema,
+      default: () => ({}),
+    },
+    phaseStats: {
+      type: PhaseStatsSchema,
       default: () => ({}),
     },
     therapistNotes: {

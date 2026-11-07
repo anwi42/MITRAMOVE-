@@ -50,7 +50,10 @@ export default function Play() {
       <div className="min-h-screen flex items-center justify-center bg-primary-50 px-4">
         <div className="card w-full max-w-md text-center space-y-4">
           <h1 className="text-2xl font-bold text-gray-800">Choose a Game</h1>
-          <p className="text-gray-500">What should {child.name} play today?</p>
+          <p className="text-gray-500">
+            What should {child.animalEmoji ? `${child.animalEmoji} ` : ''}
+            {child.name} play today?
+          </p>
 
           <button className="btn-primary w-full" onClick={() => setSelectedGame('flower')}>
             🌸 Flower Game

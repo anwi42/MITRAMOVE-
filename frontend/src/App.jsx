@@ -6,6 +6,9 @@ import Register from './components/auth/Register';
 import ParentDashboard from './components/dashboard/ParentDashboard';
 import TherapistDashboard from './pages/TherapistDashboard';
 import Play from './pages/Play';
+import FlowerGame from './components/game/FlowerGame';
+import FishGame from './components/game/FishGame';
+import KitchenGame from './components/game/KitchenGame';
 import Record from './pages/Record';
 import AAC from './pages/AAC';
 import About from './pages/About';
@@ -91,6 +94,30 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Play />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/game/flower"
+            element={
+              <ProtectedRoute>
+                <FlowerGame />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/game/fish"
+            element={
+              <ProtectedRoute>
+                <FishGame />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/game/kitchen"
+            element={
+              <ProtectedRoute>
+                <KitchenGame />
               </ProtectedRoute>
             }
           />

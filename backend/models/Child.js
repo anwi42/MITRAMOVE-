@@ -46,6 +46,10 @@ const ChildSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    animalEmoji: {
+      type: String,
+      default: null,
+    },
     ageGroup: {
       type: String,
       enum: ['3-5', '6-8', '9-12'],

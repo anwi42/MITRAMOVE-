@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import Phaser from 'phaser';
 import FishScene from './FishScene';
 import api from '../../utils/api';
@@ -14,8 +14,9 @@ const DIRECTION_VELOCITY_SCALE_X = 25;
 const DIRECTION_VELOCITY_SCALE_Y = 15;
 
 export default function FishGame({ child: childProp } = {}) {
+  const location = useLocation();
   const navigate = useNavigate();
-  const child = childProp;
+  const child = childProp || location.state?.child;
 
   const gameRef = useRef(null);
   const sceneControllerRef = useRef(null);
@@ -155,7 +156,7 @@ export default function FishGame({ child: childProp } = {}) {
       const avgDeltaY = historyY.reduce((sum, d) => sum + d, 0) / historyY.length;
 
       const dirX =
-        Math.abs(avgDeltaX) > WRIST_DELTA_THRESHOLD_X ? avgDeltaX * DIRECTION_VELOCITY_SCALE_X : 0;
+        Math.abs(avgDeltaX) > WRIST_DELTA_THRESHOLD_X ? -avgDeltaX * DIRECTION_VELOCITY_SCALE_X : 0;
       const dirY =
         Math.abs(avgDeltaY) > WRIST_DELTA_THRESHOLD_Y ? avgDeltaY * DIRECTION_VELOCITY_SCALE_Y : 0;
 
@@ -186,9 +187,23 @@ export default function FishGame({ child: childProp } = {}) {
       ? Math.floor((Date.now() - sessionStartRef.current) / 1000)
       : 0;
 
+    const directionTotals = Object.values(stats.directionStats || {}).reduce(
+      (acc, d) => ({
+        attempts: acc.attempts + (d.attempts || 0),
+        hits: acc.hits + (d.hits || 0),
+      }),
+      { attempts: 0, hits: 0 }
+    );
+    const accuracy =
+      directionTotals.attempts > 0
+        ? (directionTotals.hits / directionTotals.attempts) * 100
+        : 0;
+    const successRate =
+      directionTotals.attempts > 0 ? directionTotals.hits / directionTotals.attempts : 0;
+
     const participationValues = {
       initiationRate: 0.9,
-      persistenceRate: 1,
+      persistenceRate: successRate,
       generalizationScore: 0.7,
       communicationFreq: 0,
       adaptationVelocity: level / 2,
@@ -202,10 +217,10 @@ export default function FishGame({ child: childProp } = {}) {
       module: 'fish',
       duration: sessionDurationSec,
       performance: {
-        accuracy: 1,
+        accuracy,
         responseTime: stats.avgResponseTime,
         attempts: stats.foodEaten,
-        successRate: 1,
+        successRate,
         difficultyReached: level,
       },
       participationScore: {
@@ -248,7 +263,10 @@ export default function FishGame({ child: childProp } = {}) {
       <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: '#1a6ba0' }}>
         <div className="card w-full max-w-lg text-center space-y-4">
           <h1 className="text-2xl font-bold text-gray-800">🐠 Fish Adventure</h1>
-          <p className="text-gray-500">Choose a level for {child.name}</p>
+          <p className="text-gray-500">
+            Choose a level for {child.animalEmoji ? `${child.animalEmoji} ` : ''}
+            {child.name}
+          </p>
 
           <button
             className="btn-primary w-full text-left px-5 py-4"
@@ -282,7 +300,10 @@ export default function FishGame({ child: childProp } = {}) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: '#1a6ba0' }}>
         <div className="card w-full max-w-md text-center">
-          <h1 className="text-xl font-bold text-gray-800 mb-2">Great swimming, {child.name}!</h1>
+          <h1 className="text-xl font-bold text-gray-800 mb-2">
+            Great swimming, {child.animalEmoji ? `${child.animalEmoji} ` : ''}
+            {child.name}!
+          </h1>
           <p className="text-sm text-gray-400">
             {saving ? 'Saving your progress...' : 'Returning to dashboard...'}
           </p>

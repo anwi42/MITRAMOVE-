@@ -305,7 +305,10 @@ export default function ParentDashboard() {
                     selectedChild?._id === child._id ? 'ring-2 ring-primary-400' : ''
                   }`}
                 >
-                  <p className="font-semibold text-gray-800">{child.name}</p>
+                  <p className="font-semibold text-gray-800">
+                    {child.animalEmoji ? `${child.animalEmoji} ` : ''}
+                    {child.name}
+                  </p>
                   <p className="text-xs text-gray-500 mt-1">
                     Age {child.ageGroup} &middot; {child.preferredInteraction}
                   </p>
@@ -329,7 +332,10 @@ export default function ParentDashboard() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-800">{selectedChild.name}</h1>
+                  <h1 className="text-2xl font-bold text-gray-800">
+                    {selectedChild.animalEmoji ? `${selectedChild.animalEmoji} ` : ''}
+                    {selectedChild.name}
+                  </h1>
                   <p className="text-sm text-gray-500">Age {selectedChild.ageGroup}</p>
 
                   <div className="flex items-center gap-2 mt-1">
@@ -373,12 +379,6 @@ export default function ParentDashboard() {
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    className="btn-primary"
-                    onClick={() => navigate('/play', { state: { child: selectedChild } })}
-                  >
-                    ▶ Play Now
-                  </button>
-                  <button
                     className="btn-secondary border-blue-300 text-blue-600 hover:bg-blue-50"
                     onClick={() => navigate('/aac', { state: { child: selectedChild } })}
                   >
@@ -408,6 +408,27 @@ export default function ParentDashboard() {
                   ) : (
                     <WeeklyCalendar activeDates={weekActiveDates} />
                   )}
+
+                  <div className="flex flex-wrap gap-3 mt-4">
+                    <button
+                      onClick={() => navigate('/game/flower', { state: { child: selectedChild } })}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-pink-500 hover:bg-pink-600 text-white font-semibold rounded-xl shadow transition-all"
+                    >
+                      🌸 Flower Garden
+                    </button>
+                    <button
+                      onClick={() => navigate('/game/fish', { state: { child: selectedChild } })}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl shadow transition-all"
+                    >
+                      🐠 Fish Adventure
+                    </button>
+                    <button
+                      onClick={() => navigate('/game/kitchen', { state: { child: selectedChild } })}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl shadow transition-all"
+                    >
+                      🍵 Kitchen Helper
+                    </button>
+                  </div>
 
                   <AIInsightCard childId={selectedChild._id} />
 
@@ -507,7 +528,9 @@ export default function ParentDashboard() {
                   {summary.totalSessions === 0 ? (
                     <div className="card text-center py-16">
                       <p className="text-gray-500 mb-4">
-                        No sessions yet for {selectedChild.name}.
+                        No sessions yet for{' '}
+                        {selectedChild.animalEmoji ? `${selectedChild.animalEmoji} ` : ''}
+                        {selectedChild.name}.
                       </p>
                       <button
                         className="btn-primary"

@@ -33,13 +33,14 @@ function computeTrend(sessionsDesc) {
 
 router.post('/', async (req, res) => {
   try {
-    const { name, ageGroup, preferredInteraction } = req.body;
+    const { name, ageGroup, preferredInteraction, animalEmoji } = req.body;
 
     const child = await Child.create({
       parentId: req.user.id,
       name,
       ageGroup,
       preferredInteraction,
+      animalEmoji: animalEmoji || null,
     });
 
     res.status(201).json(child);
@@ -85,6 +86,7 @@ router.get('/therapist', async (req, res) => {
           _id: child._id,
           parentId: child.parentId,
           name: child.name,
+          animalEmoji: child.animalEmoji,
           age: child.ageGroup,
           lastSession,
           avgAccuracy,
@@ -115,7 +117,12 @@ router.get('/alerts/therapist', async (req, res) => {
       const sessions = await Session.find({ childId: child._id }).sort({ createdAt: -1 });
       if (sessions.length === 0) continue;
 
-      const childInfo = { _id: child._id, name: child.name, age: child.ageGroup };
+      const childInfo = {
+        _id: child._id,
+        name: child.name,
+        animalEmoji: child.animalEmoji,
+        age: child.ageGroup,
+      };
 
       const daysSinceLastSession = Math.floor(
         (Date.now() - new Date(sessions[0].createdAt).getTime()) / (1000 * 60 * 60 * 24)

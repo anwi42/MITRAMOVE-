@@ -307,7 +307,10 @@ export default function FlowerGame({ child: childProp } = {}) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-primary-50 px-4">
         <div className="card w-full max-w-md text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">{child.name}</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">
+            {child.animalEmoji ? `${child.animalEmoji} ` : ''}
+            {child.name}
+          </h1>
           <p className="text-gray-500 mb-6">Ready to play?</p>
           <button className="btn-primary w-full mb-3" onClick={startGame}>
             Start
@@ -324,7 +327,10 @@ export default function FlowerGame({ child: childProp } = {}) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-primary-50 px-4">
         <div className="card w-full max-w-md text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Great job, {child.name}!</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">
+            Great job, {child.animalEmoji ? `${child.animalEmoji} ` : ''}
+            {child.name}!
+          </h1>
           <div className="space-y-2 mb-6">
             <p className="text-gray-600">
               Accuracy: <span className="font-semibold">{results?.accuracy.toFixed(1)}%</span>

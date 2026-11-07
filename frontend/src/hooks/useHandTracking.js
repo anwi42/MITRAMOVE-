@@ -120,8 +120,8 @@ export default function useHandTracking(calibrationProfile) {
         return null;
       }
 
-      if (wrist.x < cp.left) return 'LEFT';
-      if (wrist.x > cp.right) return 'RIGHT';
+      if (wrist.x < cp.left) return 'RIGHT';
+      if (wrist.x > cp.right) return 'LEFT';
       if (wrist.y < cp.up) return 'UP';
       if (wrist.y > cp.down) return 'DOWN';
 

@@ -1,12 +1,21 @@
 import { useState } from 'react';
 import api from '../../utils/api';
 
+const ANIMAL_OPTIONS = [
+  { emoji: '🐱', label: 'Cat' },
+  { emoji: '🐶', label: 'Dog' },
+  { emoji: '🐰', label: 'Rabbit' },
+  { emoji: '🐻', label: 'Bear' },
+  { emoji: '🦊', label: 'Fox' },
+];
+
 export default function AddChildModal({ onClose, onChildAdded }) {
   const [name, setName] = useState('');
   const [ageGroup, setAgeGroup] = useState('3-5');
   const [preferredInteraction, setPreferredInteraction] = useState('mixed');
   const [instructionStyle, setInstructionStyle] = useState('text+icons');
   const [assistanceLevel, setAssistanceLevel] = useState('independent');
+  const [animalEmoji, setAnimalEmoji] = useState(null);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -22,6 +31,7 @@ export default function AddChildModal({ onClose, onChildAdded }) {
         preferredInteraction,
         instructionStyle,
         assistanceLevel,
+        animalEmoji,
       });
       onChildAdded(data);
       onClose();
@@ -111,6 +121,40 @@ export default function AddChildModal({ onClose, onChildAdded }) {
               <option value="with parent">With Parent</option>
               <option value="with therapist">With Therapist</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Choose an animal friend (optional)
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {ANIMAL_OPTIONS.map((animal) => (
+                <button
+                  key={animal.emoji}
+                  type="button"
+                  title={animal.label}
+                  onClick={() => setAnimalEmoji(animal.emoji)}
+                  className={`w-14 h-14 flex items-center justify-center text-3xl rounded-xl border-2 transition ${
+                    animalEmoji === animal.emoji
+                      ? 'border-primary-500 bg-primary-50'
+                      : 'border-gray-200 bg-white hover:border-primary-200'
+                  }`}
+                >
+                  {animal.emoji}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setAnimalEmoji(null)}
+                className={`px-4 h-14 flex items-center justify-center text-sm font-medium rounded-xl border-2 transition ${
+                  animalEmoji === null
+                    ? 'border-primary-500 bg-primary-50 text-primary-700'
+                    : 'border-gray-200 bg-white text-gray-500 hover:border-primary-200'
+                }`}
+              >
+                None
+              </button>
+            </div>
           </div>
 
           <div className="flex gap-3 pt-2">

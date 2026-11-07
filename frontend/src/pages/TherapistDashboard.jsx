@@ -340,7 +340,10 @@ export default function TherapistDashboard() {
                     className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm ${style.bg} ${style.border} ${style.text}`}
                   >
                     <span>{style.emoji}</span>
-                    <span className="font-semibold">{alert.child.name}</span>
+                    <span className="font-semibold">
+                      {alert.child.animalEmoji ? `${alert.child.animalEmoji} ` : ''}
+                      {alert.child.name}
+                    </span>
                     <span>—</span>
                     <span>{alert.message}</span>
                   </div>
@@ -388,7 +391,10 @@ export default function TherapistDashboard() {
                     return (
                       <Fragment key={child._id}>
                         <tr className="border-b border-gray-50">
-                          <td className="py-3 pr-4 font-semibold text-gray-800">{child.name}</td>
+                          <td className="py-3 pr-4 font-semibold text-gray-800">
+                            {child.animalEmoji ? `${child.animalEmoji} ` : ''}
+                            {child.name}
+                          </td>
                           <td className="py-3 pr-4 text-gray-600">{child.age}</td>
                           <td className="py-3 pr-4 text-gray-600">
                             {formatLastSession(child.lastSession)}
